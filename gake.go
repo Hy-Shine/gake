@@ -20,7 +20,7 @@ func main() {
 	// read and check config
 	cfg, err := initConfig(configPath)
 	if err != nil {
-		fmt.Printf("read config error: %v", err)
+		fmt.Printf("read config error: %v\n", err)
 		return
 	}
 

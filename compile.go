@@ -10,7 +10,7 @@ import (
 
 func compileBy(cfg config) error {
 	// check output dir
-	err := os.MkdirAll(cfg.Target.OutputDir, 0o755)
+	err := os.MkdirAll(cfg.OutputDir, 0o755)
 	if err != nil {
 		return fmt.Errorf("create output dir error: %v", err)
 	}
@@ -25,23 +25,27 @@ func compileBy(cfg config) error {
 				continue
 			}
 
-			compileCfg := compileConfig{
-				args:     cfg.CompileArgs.BuildArgs,
-				env:      []string{"GOOS=" + os, "GOARCH=" + arch},
-				entrance: cfg.Target.Entrance,
-			}
-			output := outputName(cfg.Target.OutputName, os, arch, cfg.Target.Suffix)
-			compileCfg.output = path.Join(cfg.Target.OutputDir, output)
-			err = compileByCmd(compileCfg)
-			if err != nil {
-				if !cfg.FailSkip {
-					return err
+			for _, target := range cfg.Targets.Apps {
+				envs := getEnvArgs(cfg.Env.Common, cfg.Env.Platform[osArch(os, arch)])
+				name := outputName(target.OutputName, os, arch, cfg.Targets.Suffix, target.Suffix)
+				compileCfg := compileConfig{
+					args:     getEnvArgs(cfg.Args.Common, cfg.Args.Platform[osArch(os, arch)]),
+					env:      getEnvs(os, arch, envs),
+					entrance: target.Entrance,
+					output:   path.Join(cfg.OutputDir, name),
 				}
-				log.Printf("compile error for %s: %v", output, err)
-				continue
-			}
-			if cfg.SuccessLog {
-				log.Printf("compile success: %s in dir %s\n", output, cfg.Target.OutputDir)
+
+				err = compileByCmd(compileCfg)
+				if err != nil {
+					if !cfg.FailSkip {
+						return err
+					}
+					log.Printf("compile error for %s: %v", name, err)
+					continue
+				}
+				if cfg.SuccessLog {
+					log.Printf("compile success: %s in dir %s\n", name, cfg.OutputDir)
+				}
 			}
 		}
 	}
@@ -84,9 +88,11 @@ func osArch(os, arch string) string {
 	return os + "/" + arch
 }
 
-func outputName(prefix, os, arch string, suffix map[string]string) string {
+func outputName(prefix, os, arch string, commonSuffix, platformSuffix map[string]string) string {
 	name := os + "_" + arch
-	if r, ok := suffix[osArch(os, arch)]; ok && r != "" {
+	if r, ok := platformSuffix[osArch(os, arch)]; ok && r != "" {
+		name = r
+	} else if r, ok := commonSuffix[osArch(os, arch)]; ok && r != "" {
 		name = r
 	}
 	output := prefix + "_" + name
@@ -94,4 +100,20 @@ func outputName(prefix, os, arch string, suffix map[string]string) string {
 		output += ".exe"
 	}
 	return output
+}
+
+func getEnvArgs(common []string, pf configPlatformBase) []string {
+	common = append(common, pf.Use...)
+	var commonEnv []string
+	for _, e := range common {
+		if !contains(pf.Exclude, e) {
+			commonEnv = append(commonEnv, e)
+		}
+	}
+	return removeDuplication(commonEnv)
+}
+
+func getEnvs(os, arch string, envs []string) []string {
+	envs = append(envs, "GOOS="+os, "GOARCH="+arch)
+	return removeDuplication(envs)
 }

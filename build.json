@@ -14,15 +14,17 @@
             "darwin/386"
         ]
     },
-    "target": {
-        "entrance": ".",
-        "outputDir": "",
-        "outputName": "my_app",
+    "targets": {
+        "suffix": {
+            "linux/arm64": "linux-arm64"
+        },
         "apps": [
             {
                 "entrance": ".",
-                "outputDir": "",
-                "outputName": "my_app"
+                "outputName": "my_app",
+                "suffix": {
+                    "linux/amd64": "Linux-AMD64"
+                }
             }
         ]
     },
@@ -31,7 +33,10 @@
             "CGO_ENABLED=0"
         ],
         "platform": {
-            "linux/amd64": []
+            "linux/amd64": {
+                "use": [],
+                "exclude": []
+            }
         }
     },
     "args": {
@@ -39,7 +44,10 @@
             "-trimpath"
         ],
         "platform": {
-            "linux/amd64": []
+            "linux/amd64": {
+                "use": [],
+                "exclude": []
+            }
         }
     },
     "failSkip": true,
