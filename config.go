@@ -10,16 +10,15 @@ import (
 type config struct {
 	Platform    configPlatform    `json:"platform"`
 	Target      configTarget      `json:"target"`
-	DepsPull    bool              `json:"depsPull"`
 	CompileArgs configCompileArgs `json:"compileArgs"`
 	FailSkip    bool              `json:"failSkip"`
 	SuccessLog  bool              `json:"successLog"`
 }
 
 type configPlatform struct {
-	OS              []string `json:"os"`
-	Arch            []string `json:"arch"`
-	ExcludePlatform []string `json:"exclude"`
+	OS      []string `json:"os"`
+	Arch    []string `json:"arch"`
+	Exclude []string `json:"exclude"`
 }
 
 type configTarget struct {

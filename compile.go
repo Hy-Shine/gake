@@ -8,14 +8,9 @@ import (
 	"path"
 )
 
-func compileBy(c string) error {
-	cfg, err := initConfig(c)
-	if err != nil {
-		return fmt.Errorf("read config error: %v", err)
-	}
-
+func compileBy(cfg config) error {
 	// check output dir
-	err = os.MkdirAll(cfg.Target.OutputDir, 0o755)
+	err := os.MkdirAll(cfg.Target.OutputDir, 0o755)
 	if err != nil {
 		return fmt.Errorf("create output dir error: %v", err)
 	}
@@ -23,15 +18,16 @@ func compileBy(c string) error {
 	// compile
 	osList := removeDuplication(cfg.Platform.OS)
 	archList := removeDuplication(cfg.Platform.Arch)
+	exclude := removeDuplication(cfg.Platform.Exclude)
 	for _, os := range osList {
 		for _, arch := range archList {
-			if contains(cfg.Platform.ExcludePlatform, combine(os, arch)) {
+			if contains(exclude, osArch(os, arch)) {
 				continue
 			}
+
 			compileCfg := compileConfig{
-				os:       os,
-				arch:     arch,
 				args:     cfg.CompileArgs.BuildArgs,
+				env:      []string{"GOOS=" + os, "GOARCH=" + arch},
 				entrance: cfg.Target.Entrance,
 			}
 			output := outputName(cfg.Target.OutputName, os, arch, cfg.Target.Suffix)
@@ -41,11 +37,11 @@ func compileBy(c string) error {
 				if !cfg.FailSkip {
 					return err
 				}
-				log.Printf("compile error: %v", err)
+				log.Printf("compile error for %s: %v", output, err)
 				continue
 			}
 			if cfg.SuccessLog {
-				fmt.Printf("compile success: %s in dir %s\n", output, cfg.Target.OutputDir)
+				log.Printf("compile success: %s in dir %s\n", output, cfg.Target.OutputDir)
 			}
 		}
 	}
@@ -54,7 +50,6 @@ func compileBy(c string) error {
 }
 
 type compileConfig struct {
-	os, arch string
 	entrance string
 	output   string
 	args     []string
@@ -76,19 +71,22 @@ func compileByCmd(cfg compileConfig) error {
 
 	bs, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("%s, %v", string(bs), err)
+		if len(bs) == 0 {
+			return err
+		}
+		return fmt.Errorf("output: %s, err: %v", string(bs), err)
 	}
 
 	return nil
 }
 
-func combine(os, arch string) string {
+func osArch(os, arch string) string {
 	return os + "/" + arch
 }
 
 func outputName(prefix, os, arch string, suffix map[string]string) string {
 	name := os + "_" + arch
-	if r, ok := suffix[combine(os, arch)]; ok && r != "" {
+	if r, ok := suffix[osArch(os, arch)]; ok && r != "" {
 		name = r
 	}
 	output := prefix + "_" + name

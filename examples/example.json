@@ -1,0 +1,35 @@
+{
+    "platform": {
+        "os": [
+            "linux",
+            "darwin",
+            "windows"
+        ],
+        "arch": [
+            "amd64",
+            "arm64",
+            "386"
+        ],
+        "exclude": [
+            "darwin/386",
+            "windows/arm64"
+        ]
+    },
+    "target": {
+        "entrance": ".",
+        "outputDir": "./example_app",
+        "outputName": "example"
+    },
+    "env": {
+        "common": [
+            "CGO_ENABLED=0"
+        ]
+    },
+    "args": {
+        "common": [
+            "-trimpath"
+        ]
+    },
+    "failSkip": false,
+    "successLog": true
+}
