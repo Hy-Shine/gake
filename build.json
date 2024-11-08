@@ -1,0 +1,47 @@
+{
+    "platform": {
+        "os": [
+            "linux",
+            "darwin",
+            "windows"
+        ],
+        "arch": [
+            "amd64",
+            "arm64",
+            "386"
+        ],
+        "exclude": [
+            "darwin/386"
+        ]
+    },
+    "target": {
+        "entrance": ".",
+        "outputDir": "",
+        "outputName": "my_app",
+        "apps": [
+            {
+                "entrance": ".",
+                "outputDir": "",
+                "outputName": "my_app"
+            }
+        ]
+    },
+    "env": {
+        "common": [
+            "CGO_ENABLED=0"
+        ],
+        "platform": {
+            "linux/amd64": []
+        }
+    },
+    "args": {
+        "common": [
+            "-trimpath"
+        ],
+        "platform": {
+            "linux/amd64": []
+        }
+    },
+    "failSkip": true,
+    "successLog": true
+}
