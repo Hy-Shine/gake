@@ -50,6 +50,7 @@
             }
         }
     },
+    "compileCost": true,
     "failSkip": true,
     "successLog": true
 }

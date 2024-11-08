@@ -11,25 +11,44 @@
             "386"
         ],
         "exclude": [
-            "darwin/386",
-            "windows/arm64"
+            "darwin/386"
         ]
     },
-    "target": {
-        "entrance": ".",
-        "outputDir": "./example_app",
-        "outputName": "example"
+    "targets": {
+        "suffix": {
+            "linux/arm64": "linux-arm64"
+        },
+        "apps": [
+            {
+                "entrance": ".",
+                "outputName": "example_app",
+                "suffix": {}
+            }
+        ]
     },
     "env": {
         "common": [
             "CGO_ENABLED=0"
-        ]
+        ],
+        "platform": {
+            "linux/amd64": {
+                "use": [],
+                "exclude": []
+            }
+        }
     },
     "args": {
         "common": [
             "-trimpath"
-        ]
+        ],
+        "platform": {
+            "linux/amd64": {
+                "use": [],
+                "exclude": []
+            }
+        }
     },
-    "failSkip": false,
+    "compileCost": true,
+    "failSkip": true,
     "successLog": true
 }

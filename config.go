@@ -27,7 +27,8 @@ type config struct {
 	// Args is args for compile
 	//
 	// eg: common: ["-trimpath"]
-	Args configEnvArg `json:"args" yaml:"args"`
+	Args        configEnvArg `json:"args" yaml:"args"`
+	CompileCost bool         `json:"compileCost" yaml:"compileCost"`
 	// FailSkip skip compile when compile error
 	FailSkip bool `json:"failSkip" yaml:"failSkip"`
 	// SuccessLog print success log

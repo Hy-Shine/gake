@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"time"
 )
 
 func compileBy(cfg config) error {
@@ -26,9 +27,11 @@ func compileBy(cfg config) error {
 			}
 
 			for _, target := range cfg.Targets.Apps {
+				now := time.Now()
 				envs := getEnvArgs(cfg.Env.Common, cfg.Env.Platform[osArch(os, arch)])
 				name := outputName(target.OutputName, os, arch, cfg.Targets.Suffix, target.Suffix)
 				compileCfg := compileConfig{
+					cost:     cfg.CompileCost,
 					args:     getEnvArgs(cfg.Args.Common, cfg.Args.Platform[osArch(os, arch)]),
 					env:      getEnvs(os, arch, envs),
 					entrance: target.Entrance,
@@ -44,7 +47,11 @@ func compileBy(cfg config) error {
 					continue
 				}
 				if cfg.SuccessLog {
-					log.Printf("compile success: %s in dir %s\n", name, cfg.OutputDir)
+					var cost string
+					if cfg.CompileCost {
+						cost = fmt.Sprintf(", cost: %.1fs", time.Since(now).Seconds())
+					}
+					log.Printf("compile success: %s in dir %s%s\n", name, cfg.OutputDir, cost)
 				}
 			}
 		}
@@ -54,6 +61,7 @@ func compileBy(cfg config) error {
 }
 
 type compileConfig struct {
+	cost     bool
 	entrance string
 	output   string
 	args     []string
