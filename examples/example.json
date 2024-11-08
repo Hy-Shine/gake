@@ -21,10 +21,8 @@
         "apps": [
             {
                 "entrance": ".",
-                "outputName": "my_app",
-                "suffix": {
-                    "linux/amd64": "Linux-AMD64"
-                }
+                "outputName": "example_app",
+                "suffix": {}
             }
         ]
     },

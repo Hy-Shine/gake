@@ -2,16 +2,30 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
 )
 
 func main() {
 	var configPath string
+	var help bool
+	flag.BoolVar(&help, "h", false, "print help")
 	flag.StringVar(&configPath, "c", "config.json", "config path")
 	flag.Parse()
 
-	err := compileBy(configPath)
+	if help {
+		flag.PrintDefaults()
+		return
+	}
+
+	// read and check config
+	cfg, err := initConfig(configPath)
 	if err != nil {
-		log.Printf("compile error: %v", err)
+		fmt.Printf("read config error: %v\n", err)
+		return
+	}
+
+	err = compileBy(cfg)
+	if err != nil {
+		fmt.Printf("compile error: %v", err)
 	}
 }
