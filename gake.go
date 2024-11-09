@@ -8,7 +8,7 @@ import (
 )
 
 type cmdArgs struct {
-	Config     string `short:"c" long:"config" description:"config path"`
+	Config     string `short:"c" long:"config" description:"path to config file"`
 	FailSkip   bool   `long:"fail-skip" description:"ignore compile fail"`
 	SuccessLog bool   `long:"success-log" description:"print success log"`
 	Cost       bool   `long:"cost" description:"print compile cost, must be used with flag success-log"`
@@ -24,7 +24,7 @@ func main() {
 		return
 	}
 
-	if arg.Help {
+	if arg.Help || arg.Config == "" {
 		parser.WriteHelp(os.Stdout)
 		return
 	}

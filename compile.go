@@ -28,23 +28,22 @@ func compileBy(cfg config) error {
 			}
 
 			for _, target := range cfg.Targets.Apps {
-				now := time.Now()
 				envs := getEnvArgs(cfg.Env.Common, cfg.Env.Platform[os], cfg.Env.Platform[osArchStr])
 				name := outputName(target.OutputName, os, arch, cfg.Targets.NameSuffix, target.NameSuffix)
 				compileCfg := compileConfig{
-					cost:     cfg.CompileCost,
 					args:     getEnvArgs(cfg.Args.Common, cfg.Args.Platform[os], cfg.Args.Platform[osArchStr]),
 					env:      getEnvs(os, arch, envs),
 					entrance: target.Entrance,
 					output:   path.Join(cfg.OutputDir, name),
 				}
 
+				now := time.Now()
 				err = compileByCmd(compileCfg)
 				if err != nil {
 					if !cfg.FailSkip {
 						return err
 					}
-					log.Printf("compile error for %s: %v", name, err)
+					log.Printf("failed, name: %s, err: %v", name, err)
 					continue
 				}
 				if cfg.SuccessLog {
@@ -52,7 +51,7 @@ func compileBy(cfg config) error {
 					if cfg.CompileCost {
 						cost = fmt.Sprintf(", cost: %.1fs", time.Since(now).Seconds())
 					}
-					log.Printf("compile success: %s in dir %s%s\n", name, cfg.OutputDir, cost)
+					log.Printf("success, dir: %s, name: %s%s\n", cfg.OutputDir, name, cost)
 				}
 			}
 		}
@@ -62,7 +61,6 @@ func compileBy(cfg config) error {
 }
 
 type compileConfig struct {
-	cost     bool
 	entrance string
 	output   string
 	args     []string
@@ -97,15 +95,15 @@ func osArch(os, arch string) string {
 	return os + "/" + arch
 }
 
-func outputName(prefix, os, arch string, commonSuffix, platformSuffix map[string]string) string {
+func outputName(name, os, arch string, commonSuffix, platformSuffix map[string]string) string {
 	osArchStr := osArch(os, arch)
-	name := os + "_" + arch
+	suffix := os + "_" + arch
 	if r, ok := platformSuffix[osArchStr]; ok && r != "" {
-		name = r
+		suffix = r
 	} else if r, ok := commonSuffix[osArchStr]; ok && r != "" {
-		name = r
+		suffix = r
 	}
-	output := prefix + "_" + name
+	output := name + "_" + suffix
 	if os == "windows" {
 		output += ".exe"
 	}

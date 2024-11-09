@@ -15,8 +15,8 @@ import (
 var errNotSupportFileType = errors.New("don't support config file type")
 
 type config struct {
-	Platform  configPlatform `json:"platform" yaml:"platform"`
 	OutputDir string         // ./output-20060102
+	Platform  configPlatform `json:"platform" yaml:"platform"`
 	Targets   configTargets  `json:"targets" yaml:"targets"`
 	// Env is env for compile
 	//
@@ -35,9 +35,9 @@ type config struct {
 }
 
 type configPlatform struct {
-	OS      string `json:"os" yaml:"os"`           // compile os
-	Arch    string `json:"arch" yaml:"arch"`       // compile arch
-	Exclude string `json:"exclude" yaml:"exclude"` // exclude os/arch
+	OS      string `json:"os" yaml:"os"`           // compile os, like: linux, windows
+	Arch    string `json:"arch" yaml:"arch"`       // compile arch, like: amd64
+	Exclude string `json:"exclude" yaml:"exclude"` // exclude os/arch, like: darwin/386
 }
 
 type configTarget struct {
@@ -49,10 +49,6 @@ type configTarget struct {
 type configTargets struct {
 	NameSuffix map[string]string `json:"nameSuffix" yaml:"nameSuffix"`
 	Apps       []configTarget    `json:"apps" yaml:"apps"`
-}
-
-type configCompileArgs struct {
-	BuildArgs []string `json:"buildArgs" yaml:"buildArgs"`
 }
 
 type configPlatformBase struct {
@@ -109,12 +105,12 @@ func readConfig(c string) (config, error) {
 
 func configHandle(cfg *config) error {
 	if len(cfg.Targets.Apps) == 0 {
-		return errors.New("targets is empty")
+		return errors.New("targets apps is empty")
 	}
-	if len(cfg.Platform.OS) == 0 {
+	if cfg.Platform.OS == "" {
 		cfg.Platform.OS = runtime.GOOS
 	}
-	if len(cfg.Platform.Arch) == 0 {
+	if cfg.Platform.Arch == "" {
 		cfg.Platform.Arch = runtime.GOARCH
 	}
 	for i, target := range cfg.Targets.Apps {
@@ -123,9 +119,6 @@ func configHandle(cfg *config) error {
 		}
 		if target.OutputName == "" {
 			return fmt.Errorf("apps[%d] output name is empty", i)
-		}
-		if target.NameSuffix == nil {
-			target.NameSuffix = map[string]string{}
 		}
 	}
 	cfg.OutputDir = fmt.Sprintf("./output-%s", time.Now().Format("20060102"))
