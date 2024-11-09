@@ -1,28 +1,20 @@
 {
     "platform": {
-        "os": [
-            "linux",
-            "darwin",
-            "windows"
-        ],
-        "arch": [
-            "amd64",
-            "arm64",
-            "386"
-        ],
-        "exclude": [
-            "darwin/386"
-        ]
+        "os": "linux,darwin,windows",
+        "arch": "amd64,arm64,386",
+        "exclude": "darwin/386"
     },
     "targets": {
-        "suffix": {
+        "nameSuffix": {
             "linux/arm64": "linux-arm64"
         },
         "apps": [
             {
                 "entrance": ".",
                 "outputName": "example_app",
-                "suffix": {}
+                "nameSuffix": {
+                    "linux/amd64": "Linux-AMD64"
+                }
             }
         ]
     },
@@ -42,13 +34,14 @@
             "-trimpath"
         ],
         "platform": {
+            "windows": {
+                "use": [],
+                "exclude": []
+            },
             "linux/amd64": {
                 "use": [],
                 "exclude": []
             }
         }
-    },
-    "compileCost": true,
-    "failSkip": true,
-    "successLog": true
+    }
 }

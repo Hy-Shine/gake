@@ -17,22 +17,23 @@ func compileBy(cfg config) error {
 	}
 
 	// compile
-	osList := removeDuplication(cfg.Platform.OS)
-	archList := removeDuplication(cfg.Platform.Arch)
-	exclude := removeDuplication(cfg.Platform.Exclude)
+	osList := distinct(split(cfg.Platform.OS))
+	archList := distinct(split(cfg.Platform.Arch))
+	exclude := distinct(split(cfg.Platform.Exclude))
 	for _, os := range osList {
 		for _, arch := range archList {
-			if contains(exclude, osArch(os, arch)) {
+			osArchStr := osArch(os, arch)
+			if contains(exclude, osArchStr) {
 				continue
 			}
 
 			for _, target := range cfg.Targets.Apps {
 				now := time.Now()
-				envs := getEnvArgs(cfg.Env.Common, cfg.Env.Platform[osArch(os, arch)])
-				name := outputName(target.OutputName, os, arch, cfg.Targets.Suffix, target.Suffix)
+				envs := getEnvArgs(cfg.Env.Common, cfg.Env.Platform[os], cfg.Env.Platform[osArchStr])
+				name := outputName(target.OutputName, os, arch, cfg.Targets.NameSuffix, target.NameSuffix)
 				compileCfg := compileConfig{
 					cost:     cfg.CompileCost,
-					args:     getEnvArgs(cfg.Args.Common, cfg.Args.Platform[osArch(os, arch)]),
+					args:     getEnvArgs(cfg.Args.Common, cfg.Args.Platform[os], cfg.Args.Platform[osArchStr]),
 					env:      getEnvs(os, arch, envs),
 					entrance: target.Entrance,
 					output:   path.Join(cfg.OutputDir, name),
@@ -97,10 +98,11 @@ func osArch(os, arch string) string {
 }
 
 func outputName(prefix, os, arch string, commonSuffix, platformSuffix map[string]string) string {
+	osArchStr := osArch(os, arch)
 	name := os + "_" + arch
-	if r, ok := platformSuffix[osArch(os, arch)]; ok && r != "" {
+	if r, ok := platformSuffix[osArchStr]; ok && r != "" {
 		name = r
-	} else if r, ok := commonSuffix[osArch(os, arch)]; ok && r != "" {
+	} else if r, ok := commonSuffix[osArchStr]; ok && r != "" {
 		name = r
 	}
 	output := prefix + "_" + name
@@ -110,18 +112,30 @@ func outputName(prefix, os, arch string, commonSuffix, platformSuffix map[string
 	return output
 }
 
-func getEnvArgs(common []string, pf configPlatformBase) []string {
-	common = append(common, pf.Use...)
+func getEnvArgs(common []string, osConfig, pfConfig configPlatformBase) []string {
+	var base configPlatformBase
+	if len(pfConfig.Use) > 0 {
+		base.Use = pfConfig.Use
+	} else {
+		base.Use = osConfig.Use
+	}
+	if len(pfConfig.Exclude) > 0 {
+		base.Exclude = pfConfig.Exclude
+	} else {
+		base.Exclude = osConfig.Exclude
+	}
+
+	common = append(common, base.Use...)
 	var commonEnv []string
 	for _, e := range common {
-		if !contains(pf.Exclude, e) {
+		if !contains(base.Exclude, e) {
 			commonEnv = append(commonEnv, e)
 		}
 	}
-	return removeDuplication(commonEnv)
+	return distinct(commonEnv)
 }
 
 func getEnvs(os, arch string, envs []string) []string {
 	envs = append(envs, "GOOS="+os, "GOARCH="+arch)
-	return removeDuplication(envs)
+	return distinct(envs)
 }

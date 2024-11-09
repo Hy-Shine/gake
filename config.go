@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"runtime"
-	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -36,20 +35,20 @@ type config struct {
 }
 
 type configPlatform struct {
-	OS      []string `json:"os" yaml:"os"`           // compile os
-	Arch    []string `json:"arch" yaml:"arch"`       // compile arch
-	Exclude []string `json:"exclude" yaml:"exclude"` // exclude os/arch
+	OS      string `json:"os" yaml:"os"`           // compile os
+	Arch    string `json:"arch" yaml:"arch"`       // compile arch
+	Exclude string `json:"exclude" yaml:"exclude"` // exclude os/arch
 }
 
 type configTarget struct {
 	Entrance   string            `json:"entrance" yaml:"entrance"`
 	OutputName string            `json:"outputName" yaml:"outputName"`
-	Suffix     map[string]string `json:"suffix" yaml:"suffix"`
+	NameSuffix map[string]string `json:"nameSuffix" yaml:"nameSuffix"`
 }
 
 type configTargets struct {
-	Suffix map[string]string `json:"suffix" yaml:"suffix"`
-	Apps   []configTarget    `json:"apps" yaml:"apps"`
+	NameSuffix map[string]string `json:"nameSuffix" yaml:"nameSuffix"`
+	Apps       []configTarget    `json:"apps" yaml:"apps"`
 }
 
 type configCompileArgs struct {
@@ -113,22 +112,20 @@ func configHandle(cfg *config) error {
 		return errors.New("targets is empty")
 	}
 	if len(cfg.Platform.OS) == 0 {
-		cfg.Platform.OS = []string{runtime.GOOS}
+		cfg.Platform.OS = runtime.GOOS
 	}
 	if len(cfg.Platform.Arch) == 0 {
-		cfg.Platform.Arch = []string{runtime.GOARCH}
+		cfg.Platform.Arch = runtime.GOARCH
 	}
 	for i, target := range cfg.Targets.Apps {
 		if target.Entrance == "" {
-			return errors.New("compile entrance is empty")
+			return fmt.Errorf("apps[%d] entrance is empty", i)
 		}
-		if name := strings.TrimSpace(target.OutputName); name == "" {
+		if target.OutputName == "" {
 			return fmt.Errorf("apps[%d] output name is empty", i)
-		} else {
-			cfg.Targets.Apps[i].OutputName = name
 		}
-		if target.Suffix == nil {
-			target.Suffix = map[string]string{}
+		if target.NameSuffix == nil {
+			target.NameSuffix = map[string]string{}
 		}
 	}
 	cfg.OutputDir = fmt.Sprintf("./output-%s", time.Now().Format("20060102"))

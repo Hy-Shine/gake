@@ -1,28 +1,18 @@
 {
     "platform": {
-        "os": [
-            "linux",
-            "darwin",
-            "windows"
-        ],
-        "arch": [
-            "amd64",
-            "arm64",
-            "386"
-        ],
-        "exclude": [
-            "darwin/386"
-        ]
+        "os": "linux,darwin,windows",
+        "arch": "amd64,arm64,386",
+        "exclude": "darwin/386"
     },
     "targets": {
-        "suffix": {
+        "nameSuffix": {
             "linux/arm64": "linux-arm64"
         },
         "apps": [
             {
                 "entrance": ".",
                 "outputName": "my_app",
-                "suffix": {
+                "nameSuffix": {
                     "linux/amd64": "Linux-AMD64"
                 }
             }
@@ -33,6 +23,10 @@
             "CGO_ENABLED=0"
         ],
         "platform": {
+            "windows": {
+                "use": [],
+                "exclude": []
+            },
             "linux/amd64": {
                 "use": [],
                 "exclude": []
@@ -44,13 +38,14 @@
             "-trimpath"
         ],
         "platform": {
+            "windows": {
+                "use": [],
+                "exclude": []
+            },
             "linux/amd64": {
                 "use": [],
                 "exclude": []
             }
         }
-    },
-    "compileCost": true,
-    "failSkip": true,
-    "successLog": true
+    }
 }
